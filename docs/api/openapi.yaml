@@ -1,0 +1,127 @@
+openapi: 3.0.3
+info:
+  title: RAG Agent API
+  description: API для поиска ответов по корпоративной базе знаний с помощью ИИ
+  version: 1.0.0
+servers:
+  - url: https://example.com/api/v1
+paths:
+  /questions:
+    post:
+      summary: Задать вопрос ассистенту
+      description: Отправляет вопрос сотрудника, выполняет RAG-поиск и возвращает сгенерированный ответ со ссылками на документы.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - question
+              properties:
+                question:
+                  type: string
+                  example: Как оформить отпуск за свой счёт?
+      responses:
+        '200':
+          description: Ответ успешно сформирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerResponse'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Ошибка генерации ответа моделью
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /questions/{id}:
+    get:
+      summary: Получить историю ответа по ID
+      description: Возвращает сохранённый ответ и источники по идентификатору вопроса.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 42
+      responses:
+        '200':
+          description: Запрос найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerResponse'
+        '404':
+          description: Вопрос с указанным ID не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /documents:
+    get:
+      summary: Получить список документов
+      description: Возвращает список регламентов и документов, доступных в базе знаний агента.
+      responses:
+        '200':
+          description: Список документов успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentItem'
+
+components:
+  schemas:
+    AnswerResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 42
+        question:
+          type: string
+          example: Как оформить отпуск за свой счёт?
+        answer:
+          type: string
+          example: Для оформления отпуска подайте заявление в отдел кадров за 14 дней.
+        sources:
+          type: array
+          items:
+            type: string
+          example:
+            - Регламент отпусков компании (раздел 4.1)
+        confidence:
+          type: number
+          format: float
+          example: 0.95
+
+    DocumentItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Регламент отпусков и командировок
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: INVALID_QUESTION
+        message:
+          type: string
+          example: Текст вопроса не может быть пустым

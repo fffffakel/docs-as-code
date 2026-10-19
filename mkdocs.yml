@@ -5,7 +5,10 @@ theme:
 
 plugins:
   - search
-  - mermaid2
+
+extra_javascript:
+  - https://unpkg.com/mermaid@10/dist/mermaid.min.js
+  - javascripts/mermaid-init.js
 
 nav:
   - Главная: index.md
@@ -13,3 +16,4 @@ nav:
       - Описание: project/overview.md
       - Требования: project/requirements.md
       - Диаграммы: project/diagrams.md
+  - API: api/index.md
