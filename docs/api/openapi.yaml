@@ -21,6 +21,7 @@ paths:
               properties:
                 question:
                   type: string
+                  minLength: 1
                   example: Как оформить отпуск за свой счёт?
       responses:
         '200':
@@ -52,7 +53,7 @@ paths:
           required: true
           schema:
             type: integer
-          example: 42
+            example: 42
       responses:
         '200':
           description: Запрос найден
@@ -60,6 +61,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AnswerResponse'
+        '400':
+          description: Некорректный идентификатор запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Вопрос с указанным ID не найден
           content:
@@ -69,7 +76,7 @@ paths:
 
   /documents:
     get:
-      summary: Получить список документов
+      summary: Получить список проиндексированных документов
       description: Возвращает список регламентов и документов, доступных в базе знаний агента.
       responses:
         '200':
@@ -80,11 +87,21 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DocumentItem'
+        '500':
+          description: Внутренняя ошибка сервиса при получении документов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   schemas:
     AnswerResponse:
       type: object
+      required:
+        - id
+        - question
+        - answer
       properties:
         id:
           type: integer
@@ -108,6 +125,9 @@ components:
 
     DocumentItem:
       type: object
+      required:
+        - id
+        - title
       properties:
         id:
           type: integer
@@ -118,6 +138,9 @@ components:
 
     ErrorResponse:
       type: object
+      required:
+        - code
+        - message
       properties:
         code:
           type: string
